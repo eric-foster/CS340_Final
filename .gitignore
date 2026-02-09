@@ -1,0 +1,45 @@
+# ============================
+# Virtual Environments
+# ============================
+.venv/
+venv/
+env/
+ENV/
+Include/
+Lib/
+Scripts/
+share/
+pyvenv.cfg
+
+# ============================
+# Python Cache / Bytecode
+# ============================
+__pycache__/
+*.pyc
+*.pyo
+
+# ============================
+# Jupyter
+# ============================
+.ipynb_checkpoints/
+etc/
+
+# ============================
+# OS / Editor Files
+# ============================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ============================
+# Secrets / Environment Files
+# ============================
+.env
+.env.*
+
+# ============================
+# Logs & Temp
+# ============================
+*.log
+*.tmp

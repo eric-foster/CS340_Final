@@ -22,7 +22,7 @@ class Animal_Shelter(object):
         # 
         # Initialize Connection 
         # 
-        self.client = MongoClient('mongodb://%s:%s@%s:%d' % (USER,PASS,HOST,PORT)) 
+        self.client = MongoClient(f"mongodb://{USER}:{PASS}@{HOST}:{PORT}/{DB}?authSource={DB}")
         self.database = self.client['%s' % (DB)] 
         self.collection = self.database['%s' % (COL)] 
             
