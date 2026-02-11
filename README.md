@@ -3,8 +3,8 @@
 A Python Dash dashboard backed by MongoDB that allows users to explore an animal shelter dataset, apply rescue-type filters, visualize breed distribution, and view animal locations on an interactive map.
 
 This repository includes:
-- A **MongoDB CRUD module** (`Animal_Shelter_DB_CRUD_Python_Module.py`) used as the data access layer
-- A **Dash/JupyterDash dashboard notebook** (`ProjectTwoDashboard.ipynb`) that renders the UI (table + chart + map)
+- A **MongoDB CRUD module** (`DB_CRUD_Python_Module.py`) used as the data access layer
+- A **Dash/JupyterDash dashboard notebook** (`Dashboard.ipynb`) that renders the UI (table + chart + map)
 - Enhancements focused on **security, scalability, and maintainability** (environment-based secrets, projection + pagination, mapping-based filters, indexes, and server-side aggregation)
 
 ---
@@ -28,7 +28,7 @@ This repository includes:
   - **Pagination** via `limit` and `skip`
   - Optional sorting
 - **Compound indexes** created at startup for faster filtering queries
-- **Aggregation pipeline** for scalable “breed count” analytics (server-side)
+- **Aggregation pipeline** for scalable "breed count" analytics (server-side)
 
 ---
 
@@ -36,7 +36,7 @@ This repository includes:
 
 ### 1) Environment-based secrets (removes hardcoded credentials)
 **Why:** Hardcoding usernames/passwords is insecure and makes deployment harder.  
-**What changed:** Dashboard reads MongoDB connection values from environment variables (optionally via `.env`).
+**What changed:** Dashboard reads MongoDB connection values from environment variables.
 
 Recommended `.env` keys:
 ```bash
@@ -82,8 +82,8 @@ MONGO_AUTHSOURCE=aac
 
 > Filenames may vary slightly depending on your working copy, but the key artifacts are:
 
-- `ProjectTwoDashboard.ipynb` — JupyterDash dashboard notebook
-- `Animal_Shelter_DB_CRUD_Python_Module.py` — MongoDB CRUD + enhancements
+- `Dashboard.ipynb` — JupyterDash dashboard notebook
+- `DB_CRUD_Python_Module.py` — MongoDB CRUD + enhancements
 - `requirements.txt` — Python dependencies
 - `aac_shelter_outcomes.csv` — source dataset (used for import)
 - `Grazioso Salvare Logo.png` — dashboard branding asset
@@ -93,8 +93,8 @@ MONGO_AUTHSOURCE=aac
 ## Clone the Repository
 
 ```bash
-git clone https://github.com/eric-foster/CS340_Final.git
-cd CS340_Final
+git clone https://github.com/eric-foster/Animal_Shelter_Dashboard.git
+cd Animal_Shelter_Dashboard
 ```
 
 ---
@@ -117,21 +117,12 @@ py -3.10 -m venv .venv
 ```
 
 ### 3) Activate the virtual environment
-Windows (PowerShell):
-```powershell
-.\.venv\Scripts\Activate.ps1
-```
 
 Windows (cmd):
-```bat
-.\venv\Scripts\activate
-```
-
-You mentioned using:
 ```bash
 ./Scripts/activate
 ```
-Use the activation command that matches the folder name you chose (e.g., `.venv` vs `venv`) and your shell.
+Use the activation command that matches the folder name you chose (`.venv` vs `venv`) and your shell.
 
 ### 4) Install dependencies
 ```bash
@@ -223,7 +214,7 @@ jupyter lab
 ```
 
 ### 2) Open the notebook and run the cell
-- Open `ProjectTwoDashboard.ipynb`
+- Open `Dashboard.ipynb`
 - Click the **Run/Play** button at the top to execute the notebook cell(s)
 
 ### 3) Open the dashboard link
