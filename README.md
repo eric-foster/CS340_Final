@@ -1,19 +1,250 @@
-# CS340_Final
+# CS340 Final — MongoDB CRUD + Dash Rescue Dashboard
 
-## How do you write programs that are maintainable, readable, and adaptable?
+A Python Dash dashboard backed by MongoDB that allows users to explore an animal shelter dataset, apply rescue-type filters, visualize breed distribution, and view animal locations on an interactive map.
 
-Writing programs that are maintainable, readable, and adaptable requires careful attention to structure, organization, and documentation. For Project One, I developed a CRUD Python module that encapsulated all database interactions for MongoDB. By centralizing create, read, update, and delete functionality in a single module, I ensured that all parts of the dashboard could interact with the database in a consistent and predictable manner. This approach promotes maintainability because future developers, or even myself, can update database logic in one place without needing to modify multiple sections of the dashboard code. Readability was enhanced through clear function names, consistent formatting, and detailed docstrings explaining the purpose and expected inputs/outputs of each function. Adaptability was achieved by designing the module to handle general queries and filters, making it reusable for future projects or extensions, such as adding new dashboards, integrating additional data sources, or connecting to other web applications.
+This repository includes:
+- A **MongoDB CRUD module** (`Animal_Shelter_DB_CRUD_Python_Module.py`) used as the data access layer
+- A **Dash/JupyterDash dashboard notebook** (`ProjectTwoDashboard.ipynb`) that renders the UI (table + chart + map)
+- Enhancements focused on **security, scalability, and maintainability** (environment-based secrets, projection + pagination, mapping-based filters, indexes, and server-side aggregation)
 
-The advantage of using this modular approach was that it separated concerns between the database logic and the dashboard presentation. This separation allowed me to focus on designing interactive features without worrying about the underlying data retrieval, resulting in cleaner, more robust code. In the future, this CRUD module could be reused to create additional dashboards, support automated reporting, or integrate with APIs for data ingestion, making it a versatile tool for any project that relies on structured data management.
+---
 
-## How do you approach a problem as a computer scientist?
+## Features
 
-As a computer scientist, I approach problems by first analyzing the requirements and constraints, then breaking the problem down into smaller, manageable components. For the Grazioso Salvare project, I began by reviewing the dashboard specifications and understanding the types of queries the client needed, such as filtering dogs by rescue type and breed. I mapped out how the dashboard’s interactive options would connect to the database through the CRUD module, following the MVC design pattern to separate the model, view, and controller responsibilities. This structured approach allowed me to plan the flow of data from MongoDB to the dashboard widgets and ensured that updates from filters would propagate correctly across all components.
+### Dashboard UI
+- **Filter controls** for rescue types:
+  - Water Rescue
+  - Mountain Rescue
+  - Disaster Rescue
+  - Reset (no filter)
+- **Interactive table** (sorting/filtering supported in the UI)
+- **Breed distribution chart** (pie chart)
+- **Geolocation map** (marker + tooltip/popup based on selected row)
 
-This project differed from previous assignments because it required end-to-end integration of database design, Python development, and UI/UX considerations. Unlike isolated programming exercises, I had to consider usability for a non-technical client, optimize for dynamic interactions, and ensure maintainability for future updates. Moving forward, I would continue to leverage modular design, thorough documentation, and incremental testing when creating databases for other clients. Techniques like indexing key fields, planning for scalability, and using standardized query functions will ensure that the database meets performance, usability, and adaptability requirements for any project.
+### Database Layer (CRUD Module)
+- Create, read, update, delete operations for the `animals` collection
+- Enhanced reads that support:
+  - **Projection** (return only the fields the dashboard needs)
+  - **Pagination** via `limit` and `skip`
+  - Optional sorting
+- **Compound indexes** created at startup for faster filtering queries
+- **Aggregation pipeline** for scalable “breed count” analytics (server-side)
 
-## What do computer scientists do, and why does it matter?
+---
 
-Computer scientists design, develop, and optimize software systems that solve real-world problems by leveraging technology. Their work involves not only writing code but also creating structured approaches to store, retrieve, and analyze data efficiently. In this project, my work enabled Grazioso Salvare to quickly identify dogs suitable for specific types of rescue training, providing actionable insights that directly support their operational mission. By building a dashboard with interactive filtering, dynamic data tables, and visualizations, I helped translate complex data into an intuitive interface that staff can use effectively, improving decision-making and reducing errors.
+## Enhancements Implemented (What Changed and Why)
 
-This type of work matters because it allows organizations to make data-driven decisions, streamline workflows, and achieve goals more efficiently. For a company like Grazioso Salvare, having a dashboard that can filter by rescue type or preferred breeds means that their team can allocate resources better, focus on dogs with the highest potential for training success, and ultimately save more lives. Computer scientists contribute value by bridging the gap between raw data and actionable intelligence, ensuring that technology not only works but also has a meaningful impact on the organization’s mission.
+### 1) Environment-based secrets (removes hardcoded credentials)
+**Why:** Hardcoding usernames/passwords is insecure and makes deployment harder.  
+**What changed:** Dashboard reads MongoDB connection values from environment variables (optionally via `.env`).
+
+Recommended `.env` keys:
+```bash
+MONGO_USER=yourAdminUsername
+MONGO_PASS=yourStrongPassword
+MONGO_HOST=127.0.0.1
+MONGO_PORT=27017
+MONGO_DB=aac
+MONGO_COL=animals
+MONGO_AUTHSOURCE=aac
+```
+
+### 2) Projection + pagination in `read()`
+**Why:** Pulling entire documents (and all records) is slow and memory-heavy.  
+**What changed:** The CRUD `read()` supports `projection`, `limit`, `skip`, and `sort`, allowing the dashboard to fetch only what it needs.
+
+### 3) Mapping-based filters
+**Why:** A dictionary-based mapping is cleaner and easier to extend than long `if/elif` chains.  
+**What changed:** Rescue filters are stored in `FILTER_QUERIES` and selected with `FILTER_QUERIES.get(filter_type, {})`.
+
+### 4) Compound indexes for filter patterns
+**Why:** Queries that repeatedly filter on the same fields benefit significantly from indexing.  
+**What changed:** `ensure_indexes()` creates indexes aligned with the dashboard’s filter usage (safe to call repeatedly).
+
+### 5) Server-side aggregation for analytics
+**Why:** Computing breed counts in Python from the table view does not scale.  
+**What changed:** `breed_counts()` uses a MongoDB aggregation pipeline to compute breed totals for the selected filter.
+
+---
+
+## Tech Stack
+
+- **Python:** 3.10.11 (required)
+- **MongoDB:** local instance (default port 27017)
+- **Dash / JupyterDash:** dashboard UI
+- **PyMongo:** database access
+- **dash-leaflet:** interactive map
+- **pandas / plotly:** data handling + charts
+
+---
+
+## Repository Structure (Typical)
+
+> Filenames may vary slightly depending on your working copy, but the key artifacts are:
+
+- `ProjectTwoDashboard.ipynb` — JupyterDash dashboard notebook
+- `Animal_Shelter_DB_CRUD_Python_Module.py` — MongoDB CRUD + enhancements
+- `requirements.txt` — Python dependencies
+- `aac_shelter_outcomes.csv` — source dataset (used for import)
+- `Grazioso Salvare Logo.png` — dashboard branding asset
+
+---
+
+## Clone the Repository
+
+```bash
+git clone https://github.com/eric-foster/CS340_Final.git
+cd CS340_Final
+```
+
+---
+
+## Setup and Run (Start-to-Finish)
+
+### 1) Python version requirement
+- **Python 3.10.11** is required for this setup.
+
+### 2) Create a virtual environment (Python 3.10)
+From the repository root:
+
+```bash
+py -3.10 -m venv [Desired_Folder_Path]
+```
+
+> Example:
+```bash
+py -3.10 -m venv .venv
+```
+
+### 3) Activate the virtual environment
+Windows (PowerShell):
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Windows (cmd):
+```bat
+.\venv\Scripts\activate
+```
+
+You mentioned using:
+```bash
+./Scripts/activate
+```
+Use the activation command that matches the folder name you chose (e.g., `.venv` vs `venv`) and your shell.
+
+### 4) Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## MongoDB Setup (Local)
+
+### 1) Install MongoDB tools
+- Download **mongosh** and **MongoDB Database Tools**
+- Add them to your **system PATH**
+
+### 2) Start Mongo Shell
+```bash
+mongosh
+```
+
+### 3) Select your database
+```javascript
+use aac
+```
+
+> You can use any database name you wish (not required to be `aac`), but keep the names consistent with your environment variables and import command.
+
+### 4) Create the admin user
+Run the following (update values to match your chosen DB name):
+
+```javascript
+db.createUser(
+  {
+    user: "yourAdminUsername",
+    pwd: "yourStrongPassword",
+    roles: [
+      { role: "dbAdmin", db: "yourDatabaseName" },
+      { role: "readWrite", db: "yourDatabaseName" }
+    ]
+  }
+)
+```
+
+### 5) Test authentication
+Exit `mongosh`, then run:
+
+```bash
+mongosh -u "aacuser" -p --authenticationDatabase "aac"
+```
+
+> Replace `aacuser` / `aac` with the username and DB you created if different.
+
+---
+
+## Import the Dataset
+
+From the repository root (or adjust the CSV path accordingly):
+
+```bash
+mongoimport --username="YourUsername" --port=27017 --host="127.0.0.1" --db YourDBName --collection animals --authenticationDatabase YourDBName --drop --type csv --headerline --file ./aac_shelter_outcomes.csv
+```
+
+After this step, the `animals` collection should be populated and ready.
+
+---
+
+## Configure Environment Variables
+
+Create a `.env` file in the repository root (recommended), or set environment variables in your shell.
+
+Example `.env`:
+
+```bash
+MONGO_USER=yourAdminUsername
+MONGO_PASS=yourStrongPassword
+MONGO_HOST=127.0.0.1
+MONGO_PORT=27017
+MONGO_DB=aac
+MONGO_COL=animals
+MONGO_AUTHSOURCE=aac
+```
+
+---
+
+## Run the Dashboard
+
+### 1) Start JupyterLab
+```bash
+jupyter lab
+```
+
+### 2) Open the notebook and run the cell
+- Open `ProjectTwoDashboard.ipynb`
+- Click the **Run/Play** button at the top to execute the notebook cell(s)
+
+### 3) Open the dashboard link
+At the bottom of the output, a URL will be printed. Open that address in your browser to view the dashboard.
+
+---
+
+## Notes and Troubleshooting
+
+### Why use projection + pagination?
+- **Projection** returns only the fields needed by the UI, reducing payload size.
+- **Pagination** limits how many records are loaded at once, improving responsiveness and preventing the browser from freezing on large datasets.
+- The table can still represent the **full dataset** via page navigation (server-side pagination), while only fetching the active page.
+
+### Map not displaying?
+- Ensure the selected record includes valid:
+  - `location_lat`
+  - `location_long`
+- If the dataset contains missing coordinates, some rows will not render a marker.
+
+---
+
+## License
+For educational/portfolio use.
